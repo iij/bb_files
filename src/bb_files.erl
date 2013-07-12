@@ -17,7 +17,7 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
     code_change/3, terminate/2]).
--export([start/1, stop/0, next_file/1, find_file/1]).
+-export([start/1, stop/0, next_file/1, current_file/1, find_file/1]).
 -export([keygen/2, valgen/1]).
 -include_lib("kernel/include/file.hrl").
 
@@ -29,8 +29,8 @@ start(Dir) ->
 next_file(Id) ->
     gen_server:call(?MODULE, {next_file, Id}).
 
-read_file(Id) ->
-    gen_server:call(?MODULE, {read_file, Id}).
+current_file(Id) ->
+    gen_server:call(?MODULE, {current_file, Id}).
 
 stop() ->
     gen_server:call(?MODULE, stop).
@@ -48,9 +48,8 @@ handle_call({next_file, Id}, _From, S=#state{}) ->
             {reply, done, S}
     end;
 
-handle_call({read_file, Id}, _From, S=#state{}) ->
-    Path = dict:fetch(Id, S#state.map),
-    {reply, file:read_file(Path), S};
+handle_call({current_file, Id}, _From, S=#state{}) ->
+    {reply, dict:fetch(Id, S#state.map), S};
 
 handle_call(stop, _From, State) ->
     {stop, normal, ok, State}.
@@ -81,7 +80,8 @@ keygen(Id, Dir) ->
 
 valgen(Id) ->
     fun() ->
-        {ok, Bin} = read_file(Id),
+        Path = current_file(Id),
+        {ok, Bin} =  file:read_file(Path),
         Bin
     end.
 
