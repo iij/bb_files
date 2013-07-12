@@ -1,0 +1,11 @@
+{application, bb_files,
+ [
+  {description, "A Basho Bench plugin for accessing local files"},
+  {vsn, "0.1.0"},
+  {registered, [bb_files]},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {env, []}
+ ]}.
