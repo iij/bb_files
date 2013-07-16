@@ -109,10 +109,10 @@ handle_directory(Dir, Stack) ->
 handle_regular_file(Name, Stack) ->
     {continue, Name, fun() -> pop_and_run(Stack) end}.
 
-pop_and_run([]) ->
-    done;
 pop_and_run([File | Rest]) ->
-    find_files(File, Rest).
+    find_files(File, Rest);
+pop_and_run([]) ->
+    done.
 
 push_many(Dir, Files, Stack) ->
     F = fun(File, S) -> [filename:join(Dir, File) | S] end,
