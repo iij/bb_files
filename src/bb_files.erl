@@ -93,27 +93,27 @@ find_file(Name, Q) ->
     case F#file_info.type of
         directory -> handle_directory(Name, Q);
         regular -> handle_regular_file(Name, Q);
-        _ -> dequeue_and_run(Q)
+        _ -> pop_and_run(Q)
     end.
 
 handle_directory(Dir, Q) ->
     case file:list_dir(Dir) of
         {ok, []} ->
-            dequeue_and_run(Q);
+            pop_and_run(Q);
         {ok, Files} ->
-            dequeue_and_run(enqueue_many(Dir, Files, Q));
+            pop_and_run(push_many(Dir, Files, Q));
         {error, _} ->
-            dequeue_and_run(Q)
+            pop_and_run(Q)
     end.
 
-dequeue_and_run([]) ->
+pop_and_run([]) ->
     done;
-dequeue_and_run([File | Rest]) ->
+pop_and_run([File | Rest]) ->
     find_file(File, Rest).
 
-enqueue_many(Dir, Files, Queue) ->
+push_many(Dir, Files, Queue) ->
     F = fun(File, Q) -> [filename:join(Dir, File) | Q] end,
     lists:foldr(F, Queue, Files).
 
 handle_regular_file(Name, Q) ->
-    {continue, Name, fun() -> dequeue_and_run(Q) end}.
+    {continue, Name, fun() -> pop_and_run(Q) end}.
