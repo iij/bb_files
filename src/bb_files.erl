@@ -17,7 +17,7 @@
 -behaviour(gen_server).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
     code_change/3, terminate/2]).
--export([start/1, stop/0, next_file/1, current_file/1, find_file/1]).
+-export([start/1, stop/0, next_file/1, current_file/1, find_files/1]).
 -export([keygen/2, valgen/1]).
 -include_lib("kernel/include/file.hrl").
 
@@ -36,7 +36,7 @@ stop() ->
     gen_server:call(?MODULE, stop).
 
 init(Dir) ->
-    F = fun() -> find_file(Dir) end,
+    F = fun() -> find_files(Dir) end,
     {ok, #state{next=F}}.
 
 handle_call({next_file, Id}, _From, S=#state{}) ->
@@ -85,10 +85,10 @@ valgen(Id) ->
         Bin
     end.
 
-find_file(Dir) ->
-    find_file(Dir, []).
+find_files(Dir) ->
+    find_files(Dir, []).
 
-find_file(Name, Stack) ->
+find_files(Name, Stack) ->
     {ok, F=#file_info{}} = file:read_file_info(Name),
     case F#file_info.type of
         directory -> handle_directory(Name, Stack);
@@ -109,7 +109,7 @@ handle_directory(Dir, Stack) ->
 pop_and_run([]) ->
     done;
 pop_and_run([File | Rest]) ->
-    find_file(File, Rest).
+    find_files(File, Rest).
 
 push_many(Dir, Files, Stack) ->
     F = fun(File, S) -> [filename:join(Dir, File) | S] end,
