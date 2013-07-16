@@ -106,6 +106,9 @@ handle_directory(Dir, Stack) ->
             pop_and_run(Stack)
     end.
 
+handle_regular_file(Name, Stack) ->
+    {continue, Name, fun() -> pop_and_run(Stack) end}.
+
 pop_and_run([]) ->
     done;
 pop_and_run([File | Rest]) ->
@@ -114,6 +117,3 @@ pop_and_run([File | Rest]) ->
 push_many(Dir, Files, Stack) ->
     F = fun(File, S) -> [filename:join(Dir, File) | S] end,
     lists:foldr(F, Stack, Files).
-
-handle_regular_file(Name, Stack) ->
-    {continue, Name, fun() -> pop_and_run(Stack) end}.
