@@ -88,22 +88,22 @@ valgen(Id) ->
 find_file(Dir) ->
     find_file(Dir, []).
 
-find_file(Name, Q) ->
+find_file(Name, Stack) ->
     {ok, F=#file_info{}} = file:read_file_info(Name),
     case F#file_info.type of
-        directory -> handle_directory(Name, Q);
-        regular -> handle_regular_file(Name, Q);
-        _ -> pop_and_run(Q)
+        directory -> handle_directory(Name, Stack);
+        regular -> handle_regular_file(Name, Stack);
+        _ -> pop_and_run(Stack)
     end.
 
-handle_directory(Dir, Q) ->
+handle_directory(Dir, Stack) ->
     case file:list_dir(Dir) of
         {ok, []} ->
-            pop_and_run(Q);
+            pop_and_run(Stack);
         {ok, Files} ->
-            pop_and_run(push_many(Dir, Files, Q));
+            pop_and_run(push_many(Dir, Files, Stack));
         {error, _} ->
-            pop_and_run(Q)
+            pop_and_run(Stack)
     end.
 
 pop_and_run([]) ->
@@ -111,9 +111,9 @@ pop_and_run([]) ->
 pop_and_run([File | Rest]) ->
     find_file(File, Rest).
 
-push_many(Dir, Files, Queue) ->
-    F = fun(File, Q) -> [filename:join(Dir, File) | Q] end,
-    lists:foldr(F, Queue, Files).
+push_many(Dir, Files, Stack) ->
+    F = fun(File, S) -> [filename:join(Dir, File) | S] end,
+    lists:foldr(F, Stack, Files).
 
-handle_regular_file(Name, Q) ->
-    {continue, Name, fun() -> pop_and_run(Q) end}.
+handle_regular_file(Name, Stack) ->
+    {continue, Name, fun() -> pop_and_run(Stack) end}.
