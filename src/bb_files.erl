@@ -86,7 +86,7 @@ valgen(Id) ->
     end.
 
 find_file(Dir) ->
-    find_file(Dir, queue:new()).
+    find_file(Dir, []).
 
 find_file(Name, Q) ->
     {ok, F=#file_info{}} = file:read_file_info(Name),
@@ -106,14 +106,13 @@ handle_directory(Dir, Q) ->
             dequeue_and_run(Q)
     end.
 
-dequeue_and_run(Q) ->
-    case queue:out(Q) of
-        {empty, _} -> done;
-        {{value, File}, NewQ} -> find_file(File, NewQ)
-    end.
+dequeue_and_run([]) ->
+    done;
+dequeue_and_run([File | Rest]) ->
+    find_file(File, Rest).
 
 enqueue_many(Dir, Files, Queue) ->
-    F = fun(File, Q) -> queue:in_r(filename:join(Dir, File), Q) end,
+    F = fun(File, Q) -> [filename:join(Dir, File) | Q] end,
     lists:foldr(F, Queue, Files).
 
 handle_regular_file(Name, Q) ->
