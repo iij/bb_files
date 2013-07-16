@@ -113,8 +113,8 @@ dequeue_and_run(Q) ->
     end.
 
 enqueue_many(Dir, Files, Queue) ->
-    F = fun(File, Q) -> queue:in(filename:join(Dir, File), Q) end,
-    lists:foldl(F, Queue, Files).
+    F = fun(File, Q) -> queue:in_r(filename:join(Dir, File), Q) end,
+    lists:foldr(F, Queue, Files).
 
 handle_regular_file(Name, Q) ->
     {continue, Name, fun() -> dequeue_and_run(Q) end}.
